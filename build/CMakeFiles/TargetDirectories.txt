@@ -1,0 +1,3 @@
+/mnt/c/users/Tania/Desktop/TemaPAOO/build/CMakeFiles/rebuild_cache.dir
+/mnt/c/users/Tania/Desktop/TemaPAOO/build/CMakeFiles/edit_cache.dir
+/mnt/c/users/Tania/Desktop/TemaPAOO/build/CMakeFiles/TemaPAOO.dir
