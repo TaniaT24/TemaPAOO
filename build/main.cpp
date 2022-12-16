@@ -1,4 +1,5 @@
 #include <iostream>
+#include <tr1/memory>
 
 class Artist
 {
@@ -39,43 +40,6 @@ public :
     return "Nume: "+NumeleMelodiei+" ,Artistul: "+a().toString();}
 
 
-void swap(Melodie& rhs)
-{
-    std::swap(this->NumeleMelodiei, rhs.NumeleMelodiei);
-    std::swap(this->TrackNumber, rhs.TrackNumber);
-}
-
-
-/*
-  Melodie& operator=(const Melodie& rhs)  //ITEM 10,l-am pus comment pt itemul11
-  {
-
-    NumeleMelodiei=rhs.NumeleMelodiei;
-    TrackNumber=rhs.TrackNumber;
-    
-    std::cout<<"aici returnam referinta la obiect, exemplificare pentru itemul10";
-     std::cout<<'\n';
-
-    return *this;
-
-  }
-  */
-
-Melodie& operator=(const Melodie& rhs) //ITEM 11,copy and swap self assignment
- {
-   Melodie temp(rhs);
-   using std::swap;
-
-   this->swap(temp);
-
-   std::cout<<"aici returnam referinta la obiect, exemplificare pentru ITEM11";
-     std::cout<<'\n';
-
-
-   return *this;
-
-}
-
 
 private :
     std::string NumeleMelodiei;
@@ -89,52 +53,90 @@ Melodie::Melodie(const std::string& numemel, const int tracknumber)
  {}
 
 
-class SongWritter
-{   //default constructor(item5)
-};
-
-
-class PlayedMelodie: public Melodie { 
-
-public:
- PlayedMelodie(const PlayedMelodie& rhs);
- PlayedMelodie& operator=(const PlayedMelodie& rhs);
-
- PlayedMelodie(const std::string& numemel, const int tracknumber,const int p);
-
-
-std::string toString()
+Melodie* createMelodie()
 {
-    return Melodie::toString()+"ascultata de " + std::to_string(numbers)+" ori";
-}
-
-private:
-int numbers;
-
-
-};
-
-PlayedMelodie::PlayedMelodie(const std::string& numemel, const int tracknumber, const int p)
-:Melodie(numemel,tracknumber),
- numbers(p)
- {}
-
-
-PlayedMelodie::PlayedMelodie(const PlayedMelodie& rhs)
-:Melodie(rhs), //invoke base class 
-numbers(rhs.numbers)
-{
-   std::cout<<"PlayedMelodie copy constructor,ITEM12";
+  Melodie *melNew = new Melodie("Forever Winter",13);  //ITEM 13
+   std::cout<<"S-a creat un nou obiect de tip melodie";
    std::cout<<'\n';
+
+  return melNew;
+
 }
-PlayedMelodie& PlayedMelodie::operator=(const PlayedMelodie& rhs)
+
+void f()
 {
-    std::cout<<"PlayedMelodie copy assignment operator,ITEM12";
-    std::cout<<'\n';
-    Melodie::operator=(rhs);
-    numbers=rhs.numbers;
-    return *this;
+                                      //ITEM13
+std::tr1::shared_ptr<Melodie> 
+pInv1(createMelodie());     //apelam functia creata pt noul obiect
+std::tr1::shared_ptr<Melodie> 
+pInv2(pInv1); 
+pInv1 = pInv2; 
+
 }
+
+class MelodyOnlyOnYoutube{    //ITEM14
+
+    private:
+        std::string name;
+        bool yt=false;      //initial melodia e si pe Spotify
+
+    public:
+    MelodyOnlyOnYoutube(std::string NumeMel){
+        this->name = NumeMel;
+        
+    }
+
+    MelodyOnlyOnYoutube(const MelodyOnlyOnYoutube &m){
+        this->name = m.name;
+        this->yt = m.yt;
+    }
+
+    ~MelodyOnlyOnYoutube(){
+        std::cout<<"Destructorul a fost apelat,Melodia care era doar pe Youtube si pe Spotify nu, a fost stearsa";   //destructor
+        std::cout<<'\n';  
+    }
+
+
+    void setarePeYtsauNU(bool yt){
+        this->yt = yt;
+    }
+
+    void isOnlyOnYTorNot(){
+        if(this->yt == false) 
+           { std::cout<<"Melodia "<< this->name <<" este si pe Spotify,nu doar pe Youtube";
+            std::cout<<'\n';}
+        else
+           { std::cout<<"Melodia "<<this->name <<" este doar pe Youtube,nu si pe Spotify";
+             std::cout<<'\n';
+           }
+    }
+
+};
+
+
+void onlyOnYT(MelodyOnlyOnYoutube &m){
+    m.setarePeYtsauNU(true);            //functia care seteaza melodia sa fie doar pe yt
+}
+
+void AlsoOnSpotify(MelodyOnlyOnYoutube &m){
+    m.setarePeYtsauNU(false);               //functia care seteaza melodia sa fie si pe Spotify
+} 
+
+class OwnerMelody{    //ITEM14
+    private:
+        MelodyOnlyOnYoutube &mel;
+
+    public:
+    OwnerMelody(MelodyOnlyOnYoutube &m):
+    mel(m){ 
+        onlyOnYT(mel);  //seteaza sa fie doar pe yt
+    }
+    ~OwnerMelody(){
+        AlsoOnSpotify(mel);    //pune melodia si pe Spotify
+         std::cout<<"Destructorul a fost apelat pt clasa Owner";   
+        std::cout<<'\n';  
+    }
+};
 
 
 
@@ -147,39 +149,15 @@ int main() {
     std::cout<<(m.toString());
     std::cout<<'\n';
     
-    SongWritter w; //default constructor(item5)
+     f();   //ITEM13
+  
+    MelodyOnlyOnYoutube melodieyt("Blonde");  //ITEM 14
+    melodieyt.isOnlyOnYTorNot();                  //initial bool este pe false deci melodia e si pe Spotify
+    std::cout<<"\n";
 
-    Melodie mel2(m); //copy constructor(item5)
-    std::cout<<(mel2.toString());
-    std::cout<<'\n';
-
-    mel2=m;  //copy assignement operator(item5)
-    std::cout<<(mel2.toString());
-    std::cout<<'\n';
-
-    //mel2.~Melodie();  //destructor(item5)
-
-    M2=m=M3; //ITEM 10
-    std::cout<<(M2.toString()); //acum numele melodiei M2 trebuie sa fie acelasi cu M3
-    std::cout<<'\n';
-
-    Melodie song("The moment",7);
-    song=song;        //ITEM 11,self assignment
-
-   std::cout<<(song.toString());
-   std::cout<<'\n';
-    
-    PlayedMelodie p1=PlayedMelodie("Maroon",2,128);
-    std::cout<<(p1.toString());
-    std::cout<<'\n';
-
-    PlayedMelodie p2=PlayedMelodie("Glitch",12,65);
-    std::cout<<(p2.toString());
-    std::cout<<'\n';
-
-    p2=p1;  //ITEM12
-    std::cout<<(p2.toString());
-    std::cout<<'\n'; 
+    OwnerMelody OWNm(melodieyt);          
+    melodieyt.isOnlyOnYTorNot();  //melodia a fost acum setata doar pe yt de catre owner
+    std::cout<<"\n";
 
 
 
